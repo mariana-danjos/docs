@@ -1,0 +1,30 @@
+.tech-logo{
+  width: 60px;
+  margin-bottom: -30px;
+  margin-top: 30px;
+}
+.tech-logo-h{
+  width: 120px;
+  margin-bottom: -50px;
+  margin-top: 30px;
+}
+
+p:has(.tech-link){
+  margin-top: -20px;
+}
+
+.btn {
+  background-color: #007bff;
+  color: white !important;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  text-decoration: none !important;
+  display: inline-block;
+  font-size: 10pt;
+  margin-top: 10px;
+}
+
+.btn:hover {
+  background-color: #0056b3;
+}
