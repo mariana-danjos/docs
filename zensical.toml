@@ -44,25 +44,26 @@ Copyright &copy; 2026
 # can be defined using TOML syntax.
 #
 # Read more: https://zensical.org/docs/setup/navigation/
- nav = [
-   { "Início" = "index.md" },
-   { "Sobre" = [
-      { "Descrição" = "about/description.md" },
-      { "Entregas" = "about/deliverables.md" },
-      { "Organização" = "about/organization.md" },
-      { "ADR" = "about/adr.md" },
-      { "Tecnologias Sugeridas" = [
-        { "Backend" = "about/tech/backend.md" },
-        { "Frontend" = "about/tech/frontend.md" },
-        { "Banco de Dados" = "about/tech/database.md" },
-      ]},
+nav = [
+  { "Início" = "index.md" },
+  { "Sobre" = [
+    { "Descrição" = "about/description.md" },
+    { "Entregas" = "about/deliverables.md" },
+    { "Organização" = "about/organization.md" },
+    { "ADR" = "about/adr.md" },
+    { "Tecnologias Sugeridas" = [
+      { "Backend" = "about/tech/backend.md" },
+      { "Frontend" = "about/tech/frontend.md" },
+      { "Banco de Dados" = "about/tech/database.md" },
     ]},
-    { "T1"= [
-      { "Entregáveis" = "t1/deliverables.md" },
-      { "Avaliação" = "t1/evaluation.md" },
-      { "Recursos" = "t1/resources.md" },
-    ]},
-   ]
+  ]},
+  { "T1" = [
+    { "Entregáveis" = "t1/deliverables.md" },
+    { "Avaliação" = "t1/evaluation.md" },
+    { "Recursos" = "t1/resources.md" },
+    { "ADR" = "t1/adr.md" },
+  ]},
+]
 
 # With the "extra_css" option you can add your own CSS styling to customize
 # your Zensical project according to your needs. You can add any number of
