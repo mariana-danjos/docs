@@ -1,0 +1,46 @@
+[
+  {
+    "timestamp": "2026-05-12T17:33:46.377Z",
+    "source": "claude",
+    "git_branch": "unknown",
+    "git_user_name": "unknown",
+    "call_context": {
+      "cwd": "c:\\Users\\lilid\\Downloads\\T1 ESII"
+    },
+    "role": "user",
+    "content": "precisamos atualizar o readme com o setuo do microfront-end, os componentes e como integrar com o Shell"
+  },
+  {
+    "timestamp": "2026-05-12T17:33:50.134Z",
+    "source": "claude",
+    "git_branch": "unknown",
+    "git_user_name": "unknown",
+    "call_context": {
+      "cwd": "c:\\Users\\lilid\\Downloads\\T1 ESII"
+    },
+    "role": "assistant",
+    "content": "Vou explorar a estrutura do projeto e o README atual antes de atualizar."
+  },
+  {
+    "timestamp": "2026-05-12T17:35:46.285Z",
+    "source": "claude",
+    "git_branch": "unknown",
+    "git_user_name": "unknown",
+    "call_context": {
+      "cwd": "c:\\Users\\lilid\\Downloads\\T1 ESII"
+    },
+    "role": "assistant",
+    "content": "O README atual está desatualizado — só menciona `LoginPage`, mas o projeto expõe 4 módulos. Vou reescrever com tudo que está faltando."
+  },
+  {
+    "timestamp": "2026-05-12T17:38:07.313Z",
+    "source": "claude",
+    "git_branch": "unknown",
+    "git_user_name": "unknown",
+    "call_context": {
+      "cwd": "c:\\Users\\lilid\\Downloads\\T1 ESII"
+    },
+    "role": "assistant",
+    "content": "README atualizado em [plus-mfe-auth/README.md](plus-mfe-auth/README.md). O que foi adicionado/corrigido:\n\n- **Setup local** com passos de instalação, variáveis de ambiente e todos os scripts (`test`, `coverage`, etc.)\n- **Módulos expostos** — documentados todos os 4, não só `LoginPage`:\n  - `./LoginPage` e `./SignupPage` com exemplos de uso\n  - `./AuthContext` — `AuthProvider` + `useAuth()` com tabela completa da API\n  - `./theme` — exports `C`, `theme`, `FONT_IMPORT`, `gradientBtn`\n- **Integração com o Shell** — configuração completa do `vite.config.js` consumer e exemplo de roteamento com `Suspense` + rota privada usando `useAuth`\n- **Estrutura de pastas** atualizada refletindo o estado real do projeto"
+  }
+]
