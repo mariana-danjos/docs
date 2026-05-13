@@ -1,0 +1,222 @@
+[
+  {
+    "timestamp": "2026-05-11T22:48:53.307Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "user",
+    "content": "leia o enunciado em docs"
+  },
+  {
+    "timestamp": "2026-05-11T22:48:55.611Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "assistant",
+    "content": "Vou ler os arquivos na pasta docs."
+  },
+  {
+    "timestamp": "2026-05-11T22:49:30.042Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "assistant",
+    "content": "Aqui está um resumo completo do enunciado do T1:\n\n---\n\n## T1 — MS Auth + MFE de Autenticação\n\n**Contexto:** Sistema de Gestão de Estoque para Loja de Roupas Plus Size (parceria com Josiel Pereira). Arquitetura de microsserviços + microfrontends na AWS. Cada grupo implementa o MS Auth; a turma vota o melhor, que é adotado por todos na T2.\n\n**Prazo:** P1 em **13/05** (apresentação + votação da turma).\n\n---\n\n### Entregáveis obrigatórios\n\n| # | Entregável | Detalhes |\n|---|---|---|\n| 1 | **MS de Autenticação** | Login/senha, JWT (access + refresh token), RBAC (admin, vendedor, gestor), revogação de tokens, User Store em PostgreSQL, endpoint de introspecção |\n| 2 | **MFE de Autenticação** | React + TypeScript + MUI (obrigatório), integrado ao MS |\n| 3 | **ADR** | Decisões arquiteturais, justificativa da stack, trade-offs |\n| 4 | **CI/CD (GitHub Actions)** | Testes unitários, build, geração de releases (Docker Hub/NPM) |\n| 5 | **Documentação** | Swagger/OpenAPI para o MS + Manual de UI para o MFE |\n| 6 | **Logs de uso de IA** | Via extensão Cognitrace ou hooks do repositório fornecido |\n\n---\n\n### Critérios de avaliação (professor 70%)\n\n| Critério | Peso |\n|---|---|\n| Governança e ADR | 20% |\n| MS de Autenticação | 25% |\n| Microfrontend | 20% |\n| DevOps e Qualidade | 20% |\n| Uso crítico de IA (logs) | 15% |\n\nMais avaliação dos pares (15%) e autoavaliação (15%).\n\n---\n\n### Boilerplates disponíveis (no mesmo diretório, rodar com Docker via `plus-infra`)\n\n- `plus-infra` — infraestrutura (Ministack emulando AWS)\n- `plus-shell` — shell app\n- `plus-ms-auth` — boilerplate do microsserviço\n- `plus-mfe-auth` — boilerplate do microfrontend\n\n---\n\n### Stack obrigatória\n\n- **MFE:** React + TypeScript + MUI\n- **MS:** TypeScript/Node.js, Python ou Ruby\n- **Infra local:** Docker + Ministack (emula ECS, API Gateway, RDS, S3, SQS/SNS, ECR)\n- **CI/CD:** GitHub Actions\n\nQuer que eu analise o estado atual do projeto no repositório para ver o que já está implementado?"
+  },
+  {
+    "timestamp": "2026-05-11T22:57:31.341Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "user",
+    "content": "como esta sendo feita a autenticacao"
+  },
+  {
+    "timestamp": "2026-05-11T22:57:34.689Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "assistant",
+    "content": "Vou explorar a estrutura do projeto para ver o que já foi implementado."
+  },
+  {
+    "timestamp": "2026-05-11T22:58:18.059Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "assistant",
+    "content": "Aqui está uma visão completa de como a autenticação está implementada:\n\n---\n\n## Backend — `plus-ms-auth` (TypeScript/Express)\n\n### Fluxo geral\n\n**Signup/Login → JWT access + refresh token → RBAC por role**\n\n| Etapa | O que acontece |\n|---|---|\n| **Signup** | bcrypt (12 rounds) no hash da senha, insere usuário no PostgreSQL, emite tokens |\n| **Login** | `bcrypt.compare` mesmo para usuários inexistentes (anti-timing attack via dummy hash), emite tokens |\n| **Access token** | JWT assinado com `JWT_ACCESS_SECRET`, expira em **15 min**, payload: `{sub, email, roles[]}` |\n| **Refresh token** | JWT assinado com `JWT_REFRESH_SECRET`, expira em **7 dias**, armazenado como hash SHA-256 na tabela `refresh_tokens` |\n| **Logout** | Adiciona hash do access token na `token_blocklist` + deleta todos os refresh tokens do usuário |\n| **Validação** | Middleware `authenticateAccessToken` verifica JWT e consulta `token_blocklist` |\n| **RBAC** | Roles: `admin`, `vendedor`, `gestor`. Middleware `requireRole` protege rotas |\n| **Rate limit** | 5 req/min signup, 10 req/min login (chave por email, não por IP) |\n\n### Rotas\n\n```\nPOST /auth/signup        → cria conta\nPOST /auth/login         → autentica\nPOST /auth/logout        → revoga tokens\nPOST /auth/refresh       → renova access token\nGET  /auth/me            → dados do usuário autenticado\nGET  /auth/roles         → lista roles disponíveis\nPOST /users/:id/roles    → atribui role (admin only)\nDEL  /users/:id/roles/:r → remove role (admin only)\n```\n\n---\n\n## Frontend — `plus-mfe-auth` (React/JSX)\n\n`AuthContext` gerencia toda a sessão:\n- Tokens salvos no `localStorage` (`plus_token` / `plus_refresh`)\n- Decodifica o `exp` do JWT client-side para agendar auto-refresh **60s antes de expirar**\n- No mount: se há token salvo, chama `/auth/refresh` para revalidar a sessão\n\n---\n\n## Bug encontrado: mismatch de campos na resposta\n\nO backend retorna o refresh token com a chave `refresh`, mas o MFE espera `refreshToken`:\n\n**Backend** ([auth.service.ts:72](plus-ms-auth/src/auth/auth.service.ts#L72)):\n```ts\nreturn { token, refresh, userId: user.id };  // signup retorna \"refresh\", sem \"user\"\n```\n\n**MFE** ([AuthContext.jsx:82](plus-mfe-auth/src/context/AuthContext.jsx#L82)):\n```js\nconst { token, refreshToken: refresh, user } = await res.json();\n// ↑ espera \"refreshToken\", não \"refresh\"\n// ↑ espera \"user\", mas signup não retorna \"user\"\n```\n\nResultado: após login/signup, o refresh token **não é salvo** no localStorage, então a sessão não persiste após expirar os 15 min do access token. Quer que eu corrija?"
+  },
+  {
+    "timestamp": "2026-05-11T23:00:38.860Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "user",
+    "content": "em portugues por favor. preciso ler como se alguem estivesse me explicando"
+  },
+  {
+    "timestamp": "2026-05-11T23:00:51.740Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "assistant",
+    "content": "Tá, deixa eu te explicar como funciona a autenticação do jeito que está implementada hoje.\n\n---\n\nQuando um usuário quer entrar no sistema, ele manda o email e a senha pro backend. O backend pega a senha e compara com o hash que está guardado no banco de dados usando o bcrypt — que é basicamente uma função que transforma a senha em uma sequência embaralhada de forma segura. Se bater, a autenticação passa.\n\nAí o backend cria dois tokens JWT e manda de volta pro usuário. O primeiro é o **access token**, que dura só 15 minutos e é o que o usuário vai usar pra provar que está logado em cada requisição. O segundo é o **refresh token**, que dura 7 dias e serve só pra pedir um access token novo quando o de 15 minutos expirar — ele fica guardado no banco de dados como um hash, por segurança.\n\nNo frontend, esses dois tokens ficam salvos no `localStorage` do navegador. O `AuthContext` fica de olho no tempo de expiração do access token: 60 segundos antes de vencer, ele já vai lá e pede um novo refresh automaticamente, sem o usuário perceber nada.\n\nQuando o usuário faz logout, o backend coloca o access token atual numa lista negra no banco de dados e apaga todos os refresh tokens daquele usuário. Assim, mesmo que alguém tenha interceptado o token, ele para de funcionar na hora.\n\nO sistema também tem controle de permissões por **roles**: um usuário pode ser `admin`, `vendedor` ou `gestor`. Algumas rotas só aceitam requisição de quem tem a role certa.\n\n---\n\n**Só que tem um bug.** O backend retorna o refresh token com o nome `refresh` na resposta, mas o frontend está esperando um campo chamado `refreshToken`. Por causa disso, quando o login termina com sucesso, o frontend não consegue achar o refresh token na resposta e não salva nada no localStorage. O resultado é que depois de 15 minutos o access token expira e o usuário cai fora da sessão sem conseguir se renovar automaticamente, porque o refresh token nunca foi guardado.\n\nQuer que eu corrija isso?"
+  },
+  {
+    "timestamp": "2026-05-11T23:24:22.934Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "user",
+    "content": "O que é shell?"
+  },
+  {
+    "timestamp": "2026-05-11T23:24:43.733Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "assistant",
+    "content": "No contexto desse projeto, o Shell é o \"dono\" da página — é ele que o navegador carrega primeiro quando o usuário abre o sistema.\n\nPensa assim: você tem vários microfrontends independentes, cada um desenvolvido por um grupo diferente — o MFE de autenticação, o de produtos, o de estoque, etc. Mas o usuário não pode abrir dez páginas diferentes, ele precisa ver tudo num lugar só. Quem junta tudo isso é o Shell.\n\nO Shell é responsável por três coisas principais:\n\n**1. Roteamento** — quando o usuário navega pra `/login`, o Shell carrega o MFE de autenticação. Quando vai pra `/produtos`, carrega o MFE de produtos. Ele decide qual pedaço mostrar em cada momento.\n\n**2. Contexto compartilhado** — como o token JWT e o usuário logado precisam estar disponíveis pra todos os MFEs, é o Shell que mantém esse estado e passa pra frente. Assim cada MFE sabe se a pessoa está autenticada sem precisar fazer isso por conta própria.\n\n**3. Design system** — o MUI (Material UI) e o layout geral da aplicação ficam no Shell, então todos os MFEs aparecem com a mesma cara visualmente.\n\nA tecnologia que permite isso se chama **Module Federation** — cada MFE é publicado como um pacote independente e o Shell vai buscar esses pacotes em tempo real quando precisa. É como se o Shell fosse uma vitrine e os MFEs fossem as peças que ele vai colocando na vitrine conforme o usuário navega."
+  },
+  {
+    "timestamp": "2026-05-11T23:30:23.801Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "user",
+    "content": "o shell integra tudo entao?"
+  },
+  {
+    "timestamp": "2026-05-11T23:30:33.618Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "assistant",
+    "content": "Exatamente. O Shell é o ponto central que integra tudo.\n\nMas ele não faz o trabalho dos MFEs — ele só organiza e hospeda. Cada MFE continua sendo completamente independente: tem seu próprio repositório, seu próprio deploy, seus próprios testes. O Shell simplesmente sabe onde cada um está publicado e vai buscar na hora que precisar.\n\nUma analogia boa é pensar no Shell como um aplicativo de streaming. A Netflix não produz todas as séries, ela só tem a plataforma que organiza e exibe tudo. Cada série é independente. O Shell é a plataforma, os MFEs são as séries.\n\nNo caso de vocês, o fluxo seria assim na prática: o usuário abre o sistema, o Shell carrega, ele vê que o usuário não está logado e aí puxa o MFE de autenticação de vocês pra mostrar a tela de login. Depois que o login acontece, o Shell guarda o token, e quando o usuário navegar pra qualquer outra parte do sistema — produtos, estoque, pedidos — o Shell já passa esse token pra esses outros MFEs, então eles sabem que a pessoa está autenticada sem precisar fazer login de novo.\n\nPor isso o MS Auth de vocês é tão importante pra T1: o grupo que fizer o melhor vai ter o serviço adotado por toda a turma na T2. Todos os outros MFEs vão depender do que vocês entregarem."
+  },
+  {
+    "timestamp": "2026-05-11T23:33:14.478Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "user",
+    "content": "é a mesma coisa que o controller no springboot?"
+  },
+  {
+    "timestamp": "2026-05-11T23:33:34.810Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "assistant",
+    "content": "Não exatamente, mas dá pra fazer uma analogia boa.\n\nO Shell do microfrontend é mais parecido com o **frontend inteiro** de uma aplicação Spring Boot — aquela pasta `resources/templates` com os HTMLs, ou um React separado que consome a API. Ele é a camada de interface que o usuário vê.\n\nAgora, o Controller do Spring Boot tem sim um equivalente aqui no projeto, só que no backend. Olha o [auth.controller.ts](plus-ms-auth/src/auth/auth.controller.ts) que você abriu — ele faz exatamente o mesmo papel: recebe a requisição HTTP, chama o serviço, e devolve a resposta. É a mesma responsabilidade do `@RestController` do Spring.\n\nA estrutura do `plus-ms-auth` inclusive segue o mesmo padrão que você já conhece do Spring:\n\n| Spring Boot | plus-ms-auth |\n|---|---|\n| `@RestController` | `auth.controller.ts` |\n| `@Service` | `auth.service.ts` |\n| `@RequestMapping` / rotas | `auth.router.ts` |\n| `@Valid` + DTO | `auth.schema.ts` (Zod) |\n| `@Repository` / JPA | `db.ts` (queries SQL diretas) |\n\nEntão o conceito é o mesmo, a linguagem e os detalhes mudam. Se você já entende MVC no Spring, você já entende a estrutura do microsserviço de vocês."
+  },
+  {
+    "timestamp": "2026-05-11T23:34:30.895Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "user",
+    "content": "o que falta no shell?"
+  },
+  {
+    "timestamp": "2026-05-11T23:34:34.000Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "assistant",
+    "content": "Deixa eu dar uma olhada no que tem no Shell hoje."
+  },
+  {
+    "timestamp": "2026-05-11T23:34:53.438Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "assistant",
+    "content": "O Shell está bem básico ainda. Deixa eu te explicar o que falta:\n\n---\n\n**O que tem hoje:**\n\nO Shell carrega a `LoginPage` do MFE de vocês, e quando o login acontece, redireciona pra uma tela de Dashboard que é só um placeholder — tem um título e um botão de sair, nada mais.\n\n---\n\n**O que está faltando ou problemático:**\n\n**1. Não usa o `AuthContext` de vocês.** O Shell verifica se o usuário está logado lendo direto o `localStorage` com a chave `\"token\"`, mas o MFE de vocês salva com a chave `\"plus_token\"`. Então o Shell nunca vai enxergar o login como bem-sucedido — o usuário loga, mas continua sendo redirecionado pro `/login`.\n\n**2. A tela de signup não está conectada.** O MFE expõe a `SignupPage`, mas o Shell não tem nenhuma rota pra ela. Se o usuário quiser criar conta, não tem como chegar lá pelo Shell.\n\n**3. O logout é feito de forma errada.** O Dashboard faz `localStorage.clear()` e redireciona, mas isso não avisa o backend pra revogar o token. O `AuthContext` de vocês já tem um `logout()` que faz isso corretamente — mas o Shell não usa ele.\n\n**4. O `AuthContext` não é passado pro restante.** O Shell importa a `LoginPage` mas não envolve a aplicação no `AuthProvider` do MFE de vocês. Isso significa que quando a T2 chegar e outros MFEs precisarem saber se o usuário está logado, não vão ter como acessar esse contexto.\n\n---\n\nO mais urgente pra T1 é o item 1 — sem isso a integração entre o Shell e o MFE de vocês não funciona na prática. Quer que eu corrija?"
+  },
+  {
+    "timestamp": "2026-05-11T23:36:20.488Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "user",
+    "content": "Para rodar essa aplicacao o que devemos fazer? run no shell?"
+  },
+  {
+    "timestamp": "2026-05-11T23:36:23.727Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "assistant",
+    "content": "Deixa eu ver como está configurado o ambiente."
+  },
+  {
+    "timestamp": "2026-05-11T23:36:36.906Z",
+    "source": "claude",
+    "git_branch": "main",
+    "git_user_name": "juliakriedte",
+    "call_context": {
+      "cwd": "/Users/julia_yume/Desktop/ComputerScience/2026/EsII/T1"
+    },
+    "role": "assistant",
+    "content": "Não precisa rodar o Shell separado — tudo sobe junto de uma vez pelo `plus-infra` usando Docker. O passo a passo é simples:\n\n---\n\n**1. Copia o arquivo de variáveis de ambiente**\n\nDentro da pasta `plus-infra`, você vai ver um arquivo `.env.example`. Você precisa criar um `.env` a partir dele:\n\n```bash\ncd plus-infra\ncp .env.example .env\n```\n\nVocê pode deixar tudo como está — o único que vale a pena mudar é o `JWT_SECRET` se quiser usar um valor próprio.\n\n---\n\n**2. Sobe tudo**\n\n```bash\nmake setup\n```\n\nEsse comando faz tudo em sequência automaticamente: inicializa o Terraform, sobe o Ministack (o emulador da AWS), provisiona o banco de dados e o API Gateway, e depois sobe o MS Auth, o MFE e o Shell.\n\n---\n\n**3. Acessa no navegador**\n\nDepois que tudo subir, você acessa:\n\n| O quê | Endereço |\n|---|---|\n| Aplicação completa (Shell) | http://localhost:3000 |\n| API do MS Auth diretamente | http://localhost:3001 |\n| MFE isolado | http://localhost:4001 |\n\n---\n\n**Outros comandos úteis:**\n\n- `make logs` — ver o que está acontecendo nos containers em tempo real\n- `make down` — parar tudo\n- `make reset` — derrubar tudo e subir do zero (útil quando algo trava)\n\n---\n\nO único pré-requisito é ter o **Docker instalado**. Não precisa de Node, nem de nada mais na máquina — tudo roda dentro dos containers."
+  }
+]
